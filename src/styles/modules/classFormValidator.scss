@@ -1,0 +1,67 @@
+.validator-form {
+  position: relative;
+  width: 100%;
+  display: block;
+  padding: 2rem;
+  box-shadow: 5px 5px 26px -17px rgba(0, 0, 0, 0.1);
+
+  &__fieldset {
+    margin: 0 0 1rem 0;
+  }
+
+  &-field {
+    margin: 0 0 1rem 0;
+    position: relative;
+    width: 100%;
+
+    &__label {
+      display: block;
+      font-weight: 600;
+      margin: 0 0 0.2rem;
+    }
+
+    &__error-message {
+      display: block;
+      font-weight: bold;
+      font-size: 0.8rem;
+      color: $ui-error;
+      margin: 0.2rem 0 0 0;
+
+    }
+
+    &__input {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 2px solid #f1f2f3;
+      width: 100%;
+      transition: all $trans-time;
+      outline: none;
+
+      &:focus {
+        border-color: $primary-color--accent;
+        box-shadow: 0 0 0 0.08rem rgba($primary-color, 0.3);
+      }
+
+      &--error {
+        border-color: $ui-error;
+      }
+    }
+  }
+
+  &__submit-button {
+    width: 100%;
+    border-radius: 6px;
+    background: $primary-color;
+    border: none;
+    color: $text-color--accent;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    transition: all $trans-time;
+    cursor: pointer;
+
+    &:hover, &:focus {
+      background-color: $primary-color--accent;
+    }
+  }
+}
