@@ -5,7 +5,7 @@ import {RequiredValidator} from "../validators/required-validator";
 import {ValidatorFactoryModel} from "../models/validator-factory";
 
 export class ValidatorFactory implements ValidatorFactoryModel {
-   getFactory(rule: Rule): Validator {
+    getValidator(rule: Rule): Validator {
         switch (rule) {
             case Rule.email:
                 return new EmailValidator();

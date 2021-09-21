@@ -79,7 +79,7 @@ export class FormValidator {
     }
 
     private interpretRule(rule: Rule, inputField: HTMLInputElement): ValidationError | null {
-        const validator = new ValidatorFactory().getFactory(rule);
+        const validator = new ValidatorFactory().getValidator(rule);
         return validator.validate(inputField.value);
     }
 
