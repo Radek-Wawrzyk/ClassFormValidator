@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Class Form Validator</title>
+    <link
+      rel="stylesheet"
+      href="<%=htmlWebpackPlugin.files.chunks.main.css %>"
+    />
+    <link 
+      href="https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&display=swap&subset=latin-ext" 
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="page">
+      <section class="page-section">
+        <h2 class="page-section__header page-section__header--center">
+          Example form
+        </h2>
+
+        <div class="page-section__content">
+          <form class="validator-form" id="base">
+            <fieldset class="validator-form__fieldset">
+              <div class="validator-form-field">
+                <label class="validator-form-field__label" for="name">
+                  Name
+                </label>
+
+                <input
+                  class="validator-form-field__input"
+                  placeholder="Joe"
+                  name="name"
+                  id="name"
+                  title="Name"
+                  data-validator-rules="required"
+                  data-validator-name="name"
+                />
+
+                <span class="validator-form-field__error-message">
+    
+                </span>
+              </div>
+
+              <div class="validator-form-field">
+                <label class="validator-form-field__label" for="lastname">
+                  Lastname
+                </label>
+
+                <input
+                  class="validator-form-field__input"
+                  placeholder="Doe"
+                  name="lastname"
+                  id="lastname"
+                  title="Lastname"
+                  data-validator-rules="required"
+                  data-validator-name="lastname"
+                />
+
+                <span class="validator-form-field__error-message">
+    
+                </span>
+              </div>
+    
+              <div class="validator-form-field">
+                <label class="validator-form-field__label" for="email">
+                  Email
+                </label>
+
+                <input
+                  class="validator-form-field__input"
+                  placeholder="joe-doe@gmail.com"
+                  name="email"
+                  id="email"
+                  title="Email"
+                  data-validator-rules="required,email"
+                  data-validator-name="required,email"
+                />
+
+                <span class="validator-form-field__error-message">
+    
+                </span>
+              </div>
+            </fieldset>
+
+            <button 
+              class="validator-form__submit-button" 
+              role="submit"
+              title="Submit form"
+              aria-label="Submit form"
+            >
+              Submit form
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
+  </body>
+</html>
