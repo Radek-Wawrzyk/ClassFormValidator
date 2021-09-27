@@ -9,7 +9,7 @@ class FormValidator {
     disableSubmitButtonOnSave: true,
   }
 
-  constructor(formNode: HTMLFormElement, options?:any|object) {
+  constructor(formNode: HTMLFormElement, options?: any|object) {
     this.options = options ? options : this.options;
     this.validator = {
       formNode: formNode,
@@ -28,9 +28,9 @@ class FormValidator {
 
   setValidator(): void {
     const self = this;
-    const fields:NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
+    const fields: NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
 
-    fields.forEach((field:HTMLInputElement) => {
+    fields.forEach((field: HTMLInputElement) => {
       const fieldName = getName(field);
 
       self.validator.controls[fieldName] = {
@@ -45,9 +45,9 @@ class FormValidator {
 
   validateOnCreated(): void {
     const self = this;
-    const fields:NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
+    const fields: NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
 
-    fields.forEach((field:HTMLInputElement) => {
+    fields.forEach((field: HTMLInputElement) => {
       field.addEventListener('input', () => {
         self.validateField(field);
       });
@@ -61,13 +61,13 @@ class FormValidator {
       event.preventDefault();
 
       for (const field in this.validator.controls) {
-        const input:HTMLInputElement = this.validator.formNode.querySelector(`[data-validator-name=${field}]`);
+        const input: HTMLInputElement = this.validator.formNode.querySelector(`[data-validator-name=${field}]`);
         self.validateField(input);
       }
     });
   }
 
-  validateField(inputField:HTMLInputElement): void {
+  validateField(inputField: HTMLInputElement): void {
     const rules = getRules(inputField)
     const self = this;
 
@@ -76,8 +76,8 @@ class FormValidator {
     });
   }
 
-  interpreteRule(rule:string, inputField:HTMLInputElement): void {
-    const fieldValue:string|number = inputField.value;
+  interpreteRule(rule:string, inputField: HTMLInputElement): void {
+    const fieldValue: string|number = inputField.value;
 
     switch (rule) {
       case 'required': {
@@ -110,36 +110,27 @@ class FormValidator {
     }
   }
 
-  validateStatus(rule:string, field:HTMLInputElement, status:boolean, message: string|null): void {
-    const errorTextDOMElement:HTMLSpanElement = field.parentElement.querySelector('.validator-form-field__error-message');
-    
+  validateStatus(rule: string, field: HTMLInputElement, status: boolean, message: string|null): void {    
     if (status) {
       this.validator.controls[field.name] = {
         ...this.validator.controls[field.name],
         validated: status,
         errors: [],
       };
-
-      errorTextDOMElement.classList.remove('validator-form-field__error-message--active');
-      errorTextDOMElement.innerHTML = message;
-      field.classList.remove('validator-form-field__input--error');
     } else {
-      const duplicatedArray:string[] = [...this.validator.controls[field.name].errors, message];
-      const errors:string[] = Array.from(new Set(duplicatedArray));
+      const duplicatedArray: string[] = [...this.validator.controls[field.name].errors, message];
+      const errors: string[] = Array.from(new Set(duplicatedArray));
 
       this.validator.controls[field.name] = {
         ...this.validator.controls[field.name],
         validated: status,
         errors: errors,
       };
-
-      errorTextDOMElement.classList.add('validator-form-field__error-message--active');
-      errorTextDOMElement.innerHTML = this.validator.controls[field.name].errors[0];
-      field.classList.add('validator-form-field__input--error');
     }
 
     this.validator.isValid = this.getValidStatus();
-    
+    this.manageDOMElementClasses(status, message, field);
+
     if (this.options.disableSubmitButtonOnSave) {
       this.handleSubmitButton();
     }
@@ -147,8 +138,17 @@ class FormValidator {
     console.log(this.validator);
   }
 
+  manageDOMElementClasses(status: boolean, errorMessage: string, field: HTMLInputElement): void {
+    const errorTextDOMElement:HTMLSpanElement = field.parentElement.querySelector('.validator-form-field__error-message');
+    const classMethod = !status ? 'add' : 'remove';
+
+    errorTextDOMElement.innerHTML = errorMessage;
+    errorTextDOMElement.classList[classMethod]('validator-form-field__error-message--active');
+    field.classList[classMethod]('validator-form-field__input--error');
+  }
+
   getValidStatus(): boolean {
-    let status = true;
+    let status: boolean = true;
     const self = this;
 
     for (let field in this.validator.controls) {
@@ -162,7 +162,7 @@ class FormValidator {
   }
 
   handleSubmitButton(): void {
-    const submitButton:HTMLButtonElement|HTMLInputElement = this.validator.formNode.querySelector('[type="submit"]');
+    const submitButton: HTMLButtonElement|HTMLInputElement = this.validator.formNode.querySelector('[type="submit"]');
     const validStatus = this.getValidStatus();
 
     if (!validStatus) {
