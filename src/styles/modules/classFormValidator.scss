@@ -60,6 +60,10 @@
     transition: all $trans-time;
     cursor: pointer;
 
+    &--disabled {
+      background: $primary-color--disabled;
+    }
+
     &:hover, &:focus {
       background-color: $primary-color--accent;
     }

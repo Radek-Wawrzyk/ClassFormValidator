@@ -1,68 +1,73 @@
 import { emailRule } from './rules/email';
 import { requiredRule } from './rules/required';
+import { getRules, getName } from './helpers/';
 
 class FormValidator {
-  readonly form: HTMLElement;
-  readonly fields: string[];
-  public errors: object;
   public validator: any;
-
-  constructor(form: HTMLElement, fields: string[]) {
-    this.form = form;
-    this.fields = fields;
-    this.validator = {};
-    this.initialize(fields);
+  readonly options: any = {
+    disableSubmitButtonOnSave: true,
   }
 
-  initialize(fields:string[]) {
+  constructor(formNode: HTMLFormElement, options?:object) {
+    this.options = options ? options : this.options;
+    this.validator = {
+      formNode: formNode,
+      isValid: false,
+      controls: {},
+    };
+
+    this.initialize();
+  }
+
+  initialize(): void {
+    this.setValidator();
     this.validateOnCreated();
     this.validateOnSubmit();
-    this.setFormDataObject(fields);
   }
 
-  setFormDataObject(fields:string[]):void {
+  setValidator(): void {
     const self = this;
+    const fields:NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
 
-    fields.forEach((field) => {
-      self.validator[field] = {
-        validated: true,
+    fields.forEach((field:HTMLInputElement) => {
+      const fieldName = getName(field);
+
+      self.validator.controls[fieldName] = {
+        validated: false,
+        nodeElement: field,
+        model: '',
         errors: [],
+        rules: getRules(field),
       };
     });
   }
 
-  validateOnCreated():void {
+  validateOnCreated(): void {
     const self = this;
+    const fields:NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
 
-    this.fields.forEach((field:string) => {
-      const input:HTMLInputElement = document.querySelector(`#${field}`);
-    
-      input.addEventListener('input', () => {
-        self.validateField(input);
+    fields.forEach((field:HTMLInputElement) => {
+      field.addEventListener('input', () => {
+        self.validateField(field);
       });
     })
   }
 
-  validateOnSubmit():void {
+  validateOnSubmit(): void {
     const self = this;
 
-    this.form.addEventListener('submit', (event) => {
+    this.validator.formNode.addEventListener('submit', (event: Event) => {
       event.preventDefault();
 
-      self.fields.forEach((field) => {
-        const input:HTMLInputElement = document.querySelector(`#${field}`);
+      for (const field in this.validator.controls) {
+        const input:HTMLInputElement = this.validator.formNode.querySelector(`[data-validator-name=${field}]`);
         self.validateField(input);
-      });
-
-      console.log(self.isValid());
+      }
     });
-
-    
   }
 
-  validateField(inputField:HTMLInputElement):void {
-    const { validatorRules } = inputField.dataset;
-    const rules:string[] = validatorRules.split(',');
+  validateField(inputField:HTMLInputElement): void {
+    const rules = getRules(inputField)
     const self = this;
 
     rules.forEach((rule) => {
@@ -70,7 +75,7 @@ class FormValidator {
     });
   }
 
-  interpreteRule(rule:string, inputField:HTMLInputElement):void {
+  interpreteRule(rule:string, inputField:HTMLInputElement): void {
     const fieldValue:string|number = inputField.value;
 
     switch (rule) {
@@ -104,33 +109,43 @@ class FormValidator {
     }
   }
 
-  validateStatus(rule:string, field:HTMLInputElement, status:boolean, message: string|null):void {
+  validateStatus(rule:string, field:HTMLInputElement, status:boolean, message: string|null): void {
     const errorTextDOMElement = field.parentElement.querySelector('.validator-form-field__error-message');
     if (status) {
-      errorTextDOMElement.classList.remove('validator-form-field__error-message--active');
-      errorTextDOMElement.innerHTML = message;
-      field.classList.remove('validator-form-field__input--error');
-
-      this.validator[field.name] = {
+      this.validator.controls[field.name] = {
+        ...this.validator.controls[field.name],
         validated: status,
         errors: [],
       };
 
-    } else {
-      errorTextDOMElement.classList.add('validator-form-field__error-message--active');
+      errorTextDOMElement.classList.remove('validator-form-field__error-message--active');
       errorTextDOMElement.innerHTML = message;
-      field.classList.add('validator-form-field__input--error');
-
-      const duplicatedArray:string[] = [...this.validator[field.name].errors, message];
+      field.classList.remove('validator-form-field__input--error');
+    } else {
+      const duplicatedArray:string[] = [...this.validator.controls[field.name].errors, message];
       const errors:string[] = Array.from(new Set(duplicatedArray));
 
-      this.validator[field.name] = {
+      this.validator.controls[field.name] = {
+        ...this.validator.controls[field.name],
         validated: status,
         errors: errors,
       };
+
+      errorTextDOMElement.classList.add('validator-form-field__error-message--active');
+      errorTextDOMElement.innerHTML = this.validator.controls[field.name].errors[0];
+      field.classList.add('validator-form-field__input--error');
     }
+
+    this.validator.isValid = this.getValidStatus();
+    
+    if (this.options.disableSubmitButtonOnSave) {
+      this.handleSubmitButton();
+    }
+    
+    console.log(this.validator);
   }
-  isValid():boolean {
+
+  getValidStatus(): boolean {
     let status = true;
     const self = this;
 
@@ -143,6 +158,19 @@ class FormValidator {
 
     return status;
   }
+
+  handleSubmitButton(): void {
+    const submitButton = this.validator.formNode.querySelector('[type="submit"]');
+    const validStatus = this.getValidStatus();
+
+    if (!validStatus) {
+      submitButton.classList.add('validator-form__submit-button--disabled');
+      submitButton.disabled = true;
+    } else {
+      submitButton.classList.remove('validator-form__submit-button--disabled');
+      submitButton.disabled = false;
+    }
+  }
 };
 
-const formOne = new FormValidator(document.querySelector('#base'), ['name', 'lastname', 'email']);
+const formOne = new FormValidator(document.querySelector('#base'));
