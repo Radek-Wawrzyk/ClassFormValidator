@@ -1,14 +1,15 @@
 import { emailRule } from './rules/email';
 import { requiredRule } from './rules/required';
 import { getRules, getName } from './helpers/';
+import { Validator, Options } from './types/';
 
 class FormValidator {
-  public validator: any;
-  readonly options: any = {
+  public validator: Validator;
+  readonly options: Options = {
     disableSubmitButtonOnSave: true,
   }
 
-  constructor(formNode: HTMLFormElement, options?:object) {
+  constructor(formNode: HTMLFormElement, options?:any|object) {
     this.options = options ? options : this.options;
     this.validator = {
       formNode: formNode,
@@ -110,7 +111,8 @@ class FormValidator {
   }
 
   validateStatus(rule:string, field:HTMLInputElement, status:boolean, message: string|null): void {
-    const errorTextDOMElement = field.parentElement.querySelector('.validator-form-field__error-message');
+    const errorTextDOMElement:HTMLSpanElement = field.parentElement.querySelector('.validator-form-field__error-message');
+    
     if (status) {
       this.validator.controls[field.name] = {
         ...this.validator.controls[field.name],
@@ -149,8 +151,8 @@ class FormValidator {
     let status = true;
     const self = this;
 
-    for (let field in this.validator) {
-      if (!self.validator[field].validated) {
+    for (let field in this.validator.controls) {
+      if (!self.validator.controls[field].validated) {
         status = false;
         break;
       }
@@ -160,7 +162,7 @@ class FormValidator {
   }
 
   handleSubmitButton(): void {
-    const submitButton = this.validator.formNode.querySelector('[type="submit"]');
+    const submitButton:HTMLButtonElement|HTMLInputElement = this.validator.formNode.querySelector('[type="submit"]');
     const validStatus = this.getValidStatus();
 
     if (!validStatus) {
