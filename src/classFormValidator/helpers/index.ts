@@ -10,7 +10,14 @@ function getName(inputField: HTMLInputElement): string {
   return validatorName;
 };
 
+function getValue(inputField: HTMLInputElement, type: string|null = 'input'): string {
+  if (type === 'input') {
+    return inputField.value;
+  }
+};
+
 export {
   getRules,
   getName,
+  getValue,
 };

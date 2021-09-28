@@ -1,6 +1,6 @@
 import { emailRule } from './rules/email';
 import { requiredRule } from './rules/required';
-import { getRules, getName } from './helpers/';
+import { getRules, getName, getValue } from './helpers/';
 import { Validator, Options } from './types/';
 
 class FormValidator {
@@ -36,7 +36,7 @@ class FormValidator {
       self.validator.controls[fieldName] = {
         validated: false,
         nodeElement: field,
-        model: '',
+        model: field.value,
         errors: [],
         rules: getRules(field),
       };
@@ -45,13 +45,12 @@ class FormValidator {
 
   validateOnCreated(): void {
     const self = this;
-    const fields: NodeList = this.validator.formNode.querySelectorAll('[data-validator-name]');
-
-    fields.forEach((field: HTMLInputElement) => {
-      field.addEventListener('input', () => {
-        self.validateField(field);
+    
+    for (const field in this.validator.controls) {
+      this.validator.controls[field].nodeElement.addEventListener('input', () => {
+        self.validateField(this.validator.controls[field].nodeElement);
       });
-    })
+    }
   }
 
   validateOnSubmit(): void {
@@ -61,8 +60,7 @@ class FormValidator {
       event.preventDefault();
 
       for (const field in this.validator.controls) {
-        const input: HTMLInputElement = this.validator.formNode.querySelector(`[data-validator-name=${field}]`);
-        self.validateField(input);
+        self.validateField(this.validator.controls[field].nodeElement);
       }
     });
   }
@@ -117,6 +115,7 @@ class FormValidator {
         validated: status,
         errors: [],
       };
+      
     } else {
       const duplicatedArray: string[] = [...this.validator.controls[field.name].errors, message];
       const errors: string[] = Array.from(new Set(duplicatedArray));
@@ -130,6 +129,7 @@ class FormValidator {
 
     this.validator.isValid = this.getValidStatus();
     this.manageDOMElementClasses(status, message, field);
+    this.updateFieldModel(field);
 
     if (this.options.disableSubmitButtonOnSave) {
       this.handleSubmitButton();
@@ -172,6 +172,10 @@ class FormValidator {
       submitButton.classList.remove('validator-form__submit-button--disabled');
       submitButton.disabled = false;
     }
+  }
+
+  updateFieldModel(field: HTMLInputElement): void {
+    this.validator.controls[getName(field)].model = getValue(field);
   }
 };
 
