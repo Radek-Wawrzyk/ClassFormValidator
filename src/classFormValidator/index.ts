@@ -5,12 +5,15 @@ import { Validator, Options } from './types/';
 
 class FormValidator {
   public validator: Validator;
+  public form: HTMLFormElement;
+  public events: any;
   readonly options: Options = {
     disableSubmitButtonOnSave: true,
   }
 
   constructor(formNode: HTMLFormElement, options?: any|object) {
     this.options = options ? options : this.options;
+    this.form = formNode;
     this.validator = {
       formNode: formNode,
       isValid: false,
@@ -24,6 +27,16 @@ class FormValidator {
     this.setValidator();
     this.validateOnCreated();
     this.validateOnSubmit();
+  }
+
+  addEventListener(listenerName: string, callback:any): void {
+    this.form.addEventListener(listenerName, callback);
+  }
+
+  dispatchEvent(eventName:string, value?:any): any {
+    this.form.dispatchEvent(new CustomEvent(eventName, {
+      detail: value,
+    }));
   }
 
   setValidator(): void {
@@ -60,18 +73,24 @@ class FormValidator {
       event.preventDefault();
 
       for (const field in this.validator.controls) {
-        self.validateField(this.validator.controls[field].nodeElement);
+        self.validateField(this.validator.controls[field].nodeElement, 'onSubmit');
       }
+
+      this.dispatchEvent('onSubmit', this.getValidStatus());
     });
   }
 
-  validateField(inputField: HTMLInputElement): void {
+  validateField(inputField: HTMLInputElement, typeEvent?: string): void {
     const rules = getRules(inputField)
     const self = this;
 
     rules.forEach((rule) => {
       self.interpreteRule(rule, inputField);
     });
+
+    if (typeEvent !== 'onSubmit') {
+      this.updateFieldModel(inputField);
+    }
   }
 
   interpreteRule(rule:string, inputField: HTMLInputElement): void {
@@ -115,7 +134,6 @@ class FormValidator {
         validated: status,
         errors: [],
       };
-      
     } else {
       const duplicatedArray: string[] = [...this.validator.controls[field.name].errors, message];
       const errors: string[] = Array.from(new Set(duplicatedArray));
@@ -125,11 +143,16 @@ class FormValidator {
         validated: status,
         errors: errors,
       };
+
+      this.dispatchEvent('onFieldError', {
+        field: this.validator.controls[field.name],
+        error: message,
+      });
     }
 
     this.validator.isValid = this.getValidStatus();
     this.manageDOMElementClasses(status, message, field);
-    this.updateFieldModel(field);
+    // this.updateFieldModel(field);
 
     if (this.options.disableSubmitButtonOnSave) {
       this.handleSubmitButton();
@@ -176,7 +199,20 @@ class FormValidator {
 
   updateFieldModel(field: HTMLInputElement): void {
     this.validator.controls[getName(field)].model = getValue(field);
+    this.dispatchEvent('onModelChange', getValue(field));
   }
 };
 
 const formOne = new FormValidator(document.querySelector('#base'));
+
+formOne.form.addEventListener('onModelChange', (event:CustomEvent) => {
+  console.log(event.type, event.detail);
+});
+
+formOne.form.addEventListener('onSubmit', (event:CustomEvent) => {
+  console.log(event.type, event.detail);
+});
+
+formOne.form.addEventListener('onFieldError', (event:CustomEvent) => {
+  console.log(event.type, event.detail);
+});
